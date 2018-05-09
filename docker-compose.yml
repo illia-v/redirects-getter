@@ -1,0 +1,9 @@
+version: '3.6'
+services:
+  redirects_getter:
+    build: .
+    entrypoint: ./get-redirects $REDIRECTS_GETTER_ARGS
+  chrome:
+    image: yukinying/chrome-headless-browser:66.0.3359.26
+    cap_add:
+      - SYS_ADMIN

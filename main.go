@@ -16,7 +16,7 @@ func main() {
 	)
 	chromeRemoteDebuggingUrl := flag.String(
 		"chrome-remote-debugging-url",
-		"http://localhost:9222",
+		"http://chrome:9222",
 		"URL of a Chrome instance for debugging.",
 	)
 	maxTimeToRedirect := flag.Duration(
