@@ -90,6 +90,7 @@ func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect t
 
 	// Use the DevTools HTTP/JSON API to manage targets (e.g. pages, webworkers).
 	devTools := devtool.New(chromeRemoteDebuggingUrl)
+	// Create a new target (tab).
 	pt, err := devTools.Create(ctx)
 	if err != nil {
 		return nil, err
