@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/mafredri/cdp"
@@ -21,13 +22,41 @@ func GetRedirects(url, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.D
 		return nil, err
 	}
 
+	// Set up a wait group to match the number of links.
+	var wg sync.WaitGroup
+	wg.Add(len(links))
+
+	errChan := make(chan error, 1) // A channel for handling errors.
 	redirects := make(map[string][]string)
+
+	// Get redirects of a link concurrently.
 	for _, link := range links {
-		linkRedirects, err := GetLinkRedirects(link, chromeRemoteDebuggingUrl, maxTimeToRedirect)
+		go func(link string) {
+			defer wg.Done()
+			linkRedirects, err := GetLinkRedirects(link, chromeRemoteDebuggingUrl, maxTimeToRedirect)
+			if err != nil {
+				// Add an error to the error channel.
+				errChan <- err
+				return
+			}
+			redirects[link] = linkRedirects
+		}(link)
+	}
+
+	// Finish when all links are processed.
+	finishedChan := make(chan bool, 1)
+	go func() {
+		wg.Wait()
+		finishedChan <- true
+	}()
+
+	// Wait until finish or an error.
+	select {
+	case <-finishedChan:
+	case err := <-errChan:
 		if err != nil {
 			return nil, err
 		}
-		redirects[link] = linkRedirects
 	}
 
 	return redirects, nil
@@ -61,7 +90,7 @@ func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect t
 
 	// Use the DevTools HTTP/JSON API to manage targets (e.g. pages, webworkers).
 	devTools := devtool.New(chromeRemoteDebuggingUrl)
-	pt, err := devTools.Get(ctx, devtool.Page)
+	pt, err := devTools.Create(ctx)
 	if err != nil {
 		return nil, err
 	}
