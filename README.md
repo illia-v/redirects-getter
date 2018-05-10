@@ -68,3 +68,7 @@ REDIRECTS_GETTER_ARGS="--resource-url=http://example.com --max-time-to-redirect=
 You can use `redirects` as a separate Go package.
 See [redirects/README.md](redirects/README.md) for a basic
 documentation.
+
+## Troubleshooting
+If a chain of redirects is not complete, it is possible that some
+redirect exceeded `--max-time-to-redirect`, try increasing the value.
