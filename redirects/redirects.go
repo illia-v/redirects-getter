@@ -136,29 +136,29 @@ func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect t
 	// Wait for the first request.
 	requestWillBeSent.Recv()
 
+	// Wait at most `maxTimeToRedirect` for a redirect.
+	redirectDeadline := time.After(maxTimeToRedirect)
+	go func() {
+		<-redirectDeadline
+		cancel()
+	}()
+
 	// Get redirects.
 	for {
-		redirected := make(chan bool, 1)
-		// Wait for a redirect at most `maxTimeToRedirect`.
-		go func(redirected chan bool) {
-			select {
-			case <-redirected:
-			case <-time.After(maxTimeToRedirect):
-				cancel()
-			}
-		}(redirected)
-
 		// Wait until a `RequestWillBeSent` event is received.
 		requestWillBeSentReply, err := requestWillBeSent.Recv()
-		redirected <- true
-		if ctx.Err() == context.Canceled {
-			break
-		}
 		if err != nil {
+			// Context can be cancelled if `maxTimeToRedirect` exceeds.
+			if ctx.Err() == context.Canceled {
+				break
+			}
 			return redirects, err
 		}
-
-		redirects.Redirects = append(redirects.Redirects, requestWillBeSentReply.DocumentURL)
+		// Process only requests with the "Document" type.
+		if *requestWillBeSentReply.Type == "Document" {
+			redirectDeadline = time.After(maxTimeToRedirect) // Reset time to wait for next redirect.
+			redirects.Redirects = append(redirects.Redirects, requestWillBeSentReply.DocumentURL)
+		}
 	}
 
 	return redirects, nil
