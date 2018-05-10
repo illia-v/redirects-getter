@@ -95,6 +95,7 @@ func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect t
 	if err != nil {
 		return nil, err
 	}
+	defer devTools.Close(ctx, pt)
 
 	// Initiate a new RPC connection to the Chrome Debugging Protocol target.
 	conn, err := rpcc.DialContext(ctx, pt.WebSocketDebuggerURL)
