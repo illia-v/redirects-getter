@@ -21,7 +21,7 @@ func main() {
 	)
 	maxTimeToRedirect := flag.Duration(
 		"max-time-to-redirect",
-		5*time.Second,
+		10*time.Second,
 		"Maximum time that you allow the tool to wait for a redirect.\n"+
 			`Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`+
 			"\nNote: an increase in the value increases execution time.",

@@ -20,7 +20,7 @@ a browser instance, building and running the project.
 --max-time-to-redirect duration
       Maximum time that you allow the tool to wait for a redirect.
       Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
-      Note: an increase in the value increases execution time. (default 5s)
+      Note: an increase in the value increases execution time. (default 10s)
 --resource-url string
       URL of an HTTP resource where links are stored.
       (default "http://docker-host1.cli.bz:8888/test-links.json")
