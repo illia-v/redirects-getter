@@ -16,7 +16,12 @@ import (
 	"github.com/mafredri/cdp/rpcc"
 )
 
-func GetRedirects(url, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.Duration) (map[string][]string, error) {
+type Redirects struct {
+	Link      string   `json:"link"`
+	Redirects []string `json:"redirects"`
+}
+
+func GetRedirects(url, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.Duration) ([]Redirects, error) {
 	links, err := getLinks(url)
 	if err != nil {
 		return nil, err
@@ -27,7 +32,7 @@ func GetRedirects(url, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.D
 	wg.Add(len(links))
 
 	errChan := make(chan error, 1) // A channel for handling errors.
-	redirects := make(map[string][]string)
+	var redirects []Redirects
 
 	// Get redirects of a link concurrently.
 	for _, link := range links {
@@ -39,7 +44,7 @@ func GetRedirects(url, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.D
 				errChan <- err
 				return
 			}
-			redirects[link] = linkRedirects
+			redirects = append(redirects, linkRedirects)
 		}(link)
 	}
 
@@ -84,7 +89,11 @@ func getLinks(url string) ([]string, error) {
 	return links.Links, nil
 }
 
-func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.Duration) ([]string, error) {
+func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.Duration) (Redirects, error) {
+	redirects := Redirects{
+		Link: link,
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -93,14 +102,14 @@ func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect t
 	// Create a new target (tab).
 	pt, err := devTools.Create(ctx)
 	if err != nil {
-		return nil, err
+		return redirects, err
 	}
 	defer devTools.Close(ctx, pt)
 
 	// Initiate a new RPC connection to the Chrome Debugging Protocol target.
 	conn, err := rpcc.DialContext(ctx, pt.WebSocketDebuggerURL)
 	if err != nil {
-		return nil, err
+		return redirects, err
 	}
 	defer conn.Close()
 
@@ -109,23 +118,25 @@ func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect t
 	// Open a RequestWillBeSent client to buffer this event.
 	requestWillBeSent, err := c.Network.RequestWillBeSent(ctx)
 	if err != nil {
-		return nil, err
+		return redirects, err
 	}
 	defer requestWillBeSent.Close()
 
 	// Enable network events.
 	if err = c.Network.Enable(ctx, network.NewEnableArgs()); err != nil {
-		return nil, err
+		return redirects, err
 	}
 
 	// Navigate to a given page.
 	_, err = c.Page.Navigate(ctx, page.NewNavigateArgs(link))
 	if err != nil {
-		return nil, err
+		return redirects, err
 	}
 
+	// Wait for the first request.
+	requestWillBeSent.Recv()
+
 	// Get redirects.
-	var redirects []string
 	for {
 		redirected := make(chan bool, 1)
 		// Wait for a redirect at most `maxTimeToRedirect`.
@@ -144,10 +155,10 @@ func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect t
 			break
 		}
 		if err != nil {
-			return nil, err
+			return redirects, err
 		}
 
-		redirects = append(redirects, requestWillBeSentReply.DocumentURL)
+		redirects.Redirects = append(redirects.Redirects, requestWillBeSentReply.DocumentURL)
 	}
 
 	return redirects, nil
