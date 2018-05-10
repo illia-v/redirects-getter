@@ -1,3 +1,4 @@
+// Package redirects provides the ability to get chains of redirects from Chrome using Chrome Debugging Protocol.
 package redirects
 
 import (
@@ -21,6 +22,8 @@ type Redirects struct {
 	Redirects []string `json:"redirects"`
 }
 
+// GetRedirects returns redirects of a couple of pages.
+// It gets links from a given HTTP resource.
 func GetRedirects(url, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.Duration) ([]Redirects, error) {
 	links, err := getLinks(url)
 	if err != nil {
@@ -67,6 +70,7 @@ func GetRedirects(url, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.D
 	return redirects, nil
 }
 
+// getLinks gets links from a given HTTP resource.
 func getLinks(url string) ([]string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -89,6 +93,7 @@ func getLinks(url string) ([]string, error) {
 	return links.Links, nil
 }
 
+// GetLinkRedirects returns redirects of one given page.
 func GetLinkRedirects(link, chromeRemoteDebuggingUrl string, maxTimeToRedirect time.Duration) (Redirects, error) {
 	redirects := Redirects{
 		Link: link,
