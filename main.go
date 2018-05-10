@@ -1,10 +1,10 @@
 package main
 
 import (
-	"flag"
 	"encoding/json"
-	"redirects_getter/redirects"
+	"flag"
 	"fmt"
+	"redirects_getter/redirects"
 	"time"
 )
 
@@ -21,9 +21,10 @@ func main() {
 	)
 	maxTimeToRedirect := flag.Duration(
 		"max-time-to-redirect",
-		5 * time.Second,
-		"Maximum time that you allow the tool to wait for a redirect. " +
-		`Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`,
+		5*time.Second,
+		"Maximum time that you allow the tool to wait for a redirect.\n"+
+			`Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`+
+			"\nNote: an increase in the value increases execution time.",
 	)
 	flag.Parse()
 

@@ -14,16 +14,16 @@ a browser instance, building and running the project.
 
 #### CLI arguments
 ```
-  --chrome-remote-debugging-url string
-        URL of a Chrome instance for debugging.
-        (default "http://chrome:9222")
-  --max-time-to-redirect duration
-        Maximum time that you allow the tool to wait for a redirect.
-        Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
-        (default 5s)
-  --resource-url string
-        URL of an HTTP resource where links are stored.
-        (default "http://docker-host1.cli.bz:8888/test-links.json")
+--chrome-remote-debugging-url string
+      URL of a Chrome instance for debugging.
+      (default "http://chrome:9222")
+--max-time-to-redirect duration
+      Maximum time that you allow the tool to wait for a redirect.
+      Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+      Note: an increase in the value increases execution time. (default 5s)
+--resource-url string
+      URL of an HTTP resource where links are stored.
+      (default "http://docker-host1.cli.bz:8888/test-links.json")
 ```
 You should use the `REDIRECTS_GETTER_ARGS` environment variable to
 provide the arguments to a Docker container. Example:
