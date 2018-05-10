@@ -3,6 +3,8 @@ services:
   redirects_getter:
     build: .
     entrypoint: ./get-redirects $REDIRECTS_GETTER_ARGS
+    depends_on:
+      - chrome
   chrome:
     image: yukinying/chrome-headless-browser:66.0.3359.26
     cap_add:
