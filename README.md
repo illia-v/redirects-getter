@@ -3,6 +3,7 @@ A highly concurrent tool for getting chains of redirects from Chrome.
 
 It is solution for a task of Round 1 of
 [DEV Challenge 12](https://devchallenge.it/) (standard level).
+See the task in [task.pdf](./task.pdf).
 
 ## Prerequisite
 The project uses Docker and Docker Compose.
