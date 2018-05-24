@@ -73,3 +73,7 @@ documentation.
 ## Troubleshooting
 If a chain of redirects is not complete, it is possible that some
 redirect exceeded `--max-time-to-redirect`, try increasing the value.
+
+## License
+This project is licensed under the terms of the MIT license.
+See [LICENSE](./LICENSE).
